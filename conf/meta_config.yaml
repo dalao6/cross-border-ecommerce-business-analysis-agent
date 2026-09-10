@@ -1,0 +1,368 @@
+tables:
+  - name: sales_order
+    role: fact
+    description: 销售订单事实表，记录企业跨境销售订单，包含订单时间、客户、店铺、平台、国家、商品数量与金额。
+    columns:
+      - name: order_id
+        role: primary_key
+        description: 订单唯一标识。
+        alias: [订单号, 订单编号, 订单ID]
+        sync: false
+
+      - name: order_date
+        role: dimension
+        description: 订单创建日期。
+        alias: [日期, 时间, 下单时间, 月份, 月, 年]
+        sync: false
+
+      - name: customer_id
+        role: foreign_key
+        description: 下单客户标识。
+        alias: [客户, 买家, 客户ID]
+        sync: false
+
+      - name: store_id
+        role: foreign_key
+        description: 成交店铺标识。
+        alias: [店铺, 店, 店铺ID]
+        sync: false
+
+      - name: product_id
+        role: foreign_key
+        description: 售出商品标识。
+        alias: [商品, 产品, SKU, 款式, 商品ID]
+        sync: false
+
+      - name: country
+        role: dimension
+        description: 销售目的国/市场。
+        alias: [国家, 地区, 市场]
+        sync: true
+
+      - name: platform
+        role: dimension
+        description: 订单来源平台。
+        alias: [平台, 渠道]
+        sync: true
+
+      - name: quantity
+        role: measure
+        description: 商品销售数量（件）。
+        alias: [销量, 销售数量, 卖出数量, 商品数量, 件数, 售出]
+        sync: false
+
+      - name: unit_price
+        role: measure
+        description: 单件成交价。
+        alias: [单价, 价格, 售价]
+        sync: false
+
+      - name: amount
+        role: measure
+        description: 订单成交金额（数量×单价）。
+        alias: [销售额, 销售金额, GMV, 成交额, 营收, 收入]
+        sync: false
+
+  - name: product
+    role: dim
+    description: 商品（SKU）主数据表，包含品类、成本、售价与上架时间。
+    columns:
+      - name: product_id
+        role: primary_key
+        description: 商品唯一标识。
+        alias: [商品, 产品, SKU, 商品ID]
+        sync: false
+
+      - name: sku
+        role: dimension
+        description: 商品库存编码。
+        alias: [SKU, 编码, 货号]
+        sync: false
+
+      - name: product_name
+        role: dimension
+        description: 商品名称。
+        alias: [商品名, 品名, 名称]
+        sync: false
+
+      - name: category
+        role: dimension
+        description: 商品所属品类。
+        alias: [类目, 品类, 分类]
+        sync: true
+
+      - name: cost
+        role: measure
+        description: 单件生产成本。
+        alias: [成本, 成本价, 生产成本]
+        sync: false
+
+      - name: price
+        role: measure
+        description: 标准零售价。
+        alias: [价格, 售价, 单价]
+        sync: false
+
+      - name: launch_date
+        role: dimension
+        description: 商品首次上架日期。
+        alias: [上架, 上新, 上市]
+        sync: false
+
+  - name: store
+    role: dim
+    description: 跨境销售店铺主数据表，包含平台、站点国家与开店时间。
+    columns:
+      - name: store_id
+        role: primary_key
+        description: 店铺唯一标识。
+        alias: [店铺, 店, 店铺ID]
+        sync: false
+
+      - name: store_name
+        role: dimension
+        description: 店铺名称。
+        alias: [店铺名, 店名]
+        sync: false
+
+      - name: platform
+        role: dimension
+        description: 店铺所属平台。
+        alias: [平台, 渠道]
+        sync: true
+
+      - name: country
+        role: dimension
+        description: 店铺面向的国家/市场。
+        alias: [国家, 市场, 站点]
+        sync: true
+
+      - name: opened_date
+        role: dimension
+        description: 店铺开业日期。
+        alias: [开店, 上线]
+        sync: false
+
+  - name: customer
+    role: dim
+    description: B端/C端客户主数据表，包含客户类型、国家与首次/最近下单时间。
+    columns:
+      - name: customer_id
+        role: primary_key
+        description: 客户唯一标识。
+        alias: [客户, 买家, 客户ID]
+        sync: false
+
+      - name: customer_name
+        role: dimension
+        description: 客户名称。
+        alias: [客户名, 买家名]
+        sync: false
+
+      - name: customer_type
+        role: dimension
+        description: B端批发客户或C端消费者。
+        alias: [类型, B端, C端, 批发, 零售]
+        sync: true
+
+      - name: country
+        role: dimension
+        description: 客户所在国家。
+        alias: [国家, 地区, 市场]
+        sync: true
+
+      - name: first_order_date
+        role: dimension
+        description: 客户首次下单时间。
+        alias: [首单, 首次下单]
+        sync: false
+
+      - name: last_order_date
+        role: dimension
+        description: 客户最近一次下单时间。
+        alias: [最近下单, 末次下单]
+        sync: false
+
+  - name: inventory
+    role: dim
+    description: 各商品在各仓库的当前库存与安全库存水位表。
+    columns:
+      - name: inventory_id
+        role: primary_key
+        description: 库存记录唯一标识。
+        alias: [库存记录]
+        sync: false
+
+      - name: product_id
+        role: foreign_key
+        description: 商品标识。
+        alias: [商品, 产品, SKU]
+        sync: false
+
+      - name: warehouse
+        role: dimension
+        description: 库存所在仓库。
+        alias: [仓库, 仓]
+        sync: true
+
+      - name: quantity
+        role: measure
+        description: 当前库存件数。
+        alias: [库存, 库存量, 现存, 库存数量]
+        sync: false
+
+      - name: safety_stock
+        role: measure
+        description: 安全库存水位。
+        alias: [安全库存, 警戒线]
+        sync: false
+
+      - name: last_restock_date
+        role: dimension
+        description: 最近一次补货入库日期。
+        alias: [入库, 补货, 进货]
+        sync: false
+
+  - name: quality_inspection
+    role: fact
+    description: 生产批次质检记录表，包含检验数量与不合格数量。
+    columns:
+      - name: inspection_id
+        role: primary_key
+        description: 质检单唯一标识。
+        alias: [质检单, 检验单]
+        sync: false
+
+      - name: inspection_date
+        role: dimension
+        description: 质检执行日期。
+        alias: [日期, 质检时间]
+        sync: false
+
+      - name: product_id
+        role: foreign_key
+        description: 被检商品。
+        alias: [商品, 产品, SKU]
+        sync: false
+
+      - name: batch
+        role: dimension
+        description: 生产批次号。
+        alias: [批次, 批号]
+        sync: false
+
+      - name: total_qty
+        role: measure
+        description: 本批次检验总数。
+        alias: [检验数, 抽检数]
+        sync: false
+
+      - name: defect_qty
+        role: measure
+        description: 本批次不合格数。
+        alias: [不合格, 次品数, 不良品]
+        sync: false
+
+  - name: production_delay
+    role: fact
+    description: 生产/交付延期记录表，包含计划与实际的交付日期及延期天数。
+    columns:
+      - name: delay_id
+        role: primary_key
+        description: 延期记录唯一标识。
+        alias: [延期记录]
+        sync: false
+
+      - name: order_id
+        role: foreign_key
+        description: 关联订单。
+        alias: [订单]
+        sync: false
+
+      - name: product_id
+        role: foreign_key
+        description: 延期商品。
+        alias: [商品, 产品, SKU]
+        sync: false
+
+      - name: planned_date
+        role: dimension
+        description: 计划交付日期。
+        alias: [计划交付, 计划日期, 交期]
+        sync: false
+
+      - name: actual_date
+        role: dimension
+        description: 实际交付日期。
+        alias: [实际交付, 实际日期]
+        sync: false
+
+      - name: delay_days
+        role: measure
+        description: 实际交付晚于计划的天数。
+        alias: [延期天数, 延误天数, 延期]
+        sync: false
+
+metrics:
+  - name: 销量
+    description: 统计周期内售出的商品件数之和。
+    relevant_columns:
+      - sales_order.quantity
+    alias: [销量, 销售数量, 卖出数量, 件数, 售出量]
+
+  - name: 销售额
+    description: 统计周期内订单成交金额之和，即 GMV。
+    relevant_columns:
+      - sales_order.amount
+    alias: [销售额, 销售金额, GMV, 成交额, 营收, 收入]
+
+  - name: 客单价
+    description: 统计周期内销售额除以订单数。
+    relevant_columns:
+      - sales_order.amount
+      - sales_order.order_id
+    alias: [客单价, 单均, 平均每单]
+
+  - name: 毛利率
+    description: 销售额减去商品成本后除以销售额。
+    relevant_columns:
+      - sales_order.amount
+      - sales_order.quantity
+      - product.cost
+    alias: [毛利率, 毛利]
+
+  - name: 利润
+    description: 销售额减去商品成本。
+    relevant_columns:
+      - sales_order.amount
+      - sales_order.quantity
+      - product.cost
+    alias: [利润, 毛利额, 净赚]
+
+  - name: 复购率
+    description: 统计周期内下单次数大于等于2次的客户数除以下单客户总数。
+    relevant_columns:
+      - sales_order.customer_id
+      - sales_order.order_id
+    alias: [复购率, 回购率, 回头客]
+
+  - name: 质检不合格率
+    description: 不合格数量除以检验总数。
+    relevant_columns:
+      - quality_inspection.defect_qty
+      - quality_inspection.total_qty
+    alias: [质检不合格率, 不合格率, 次品率, 不良率]
+
+  - name: 平均延期天数
+    description: 生产/交付延期天数的平均值。
+    relevant_columns:
+      - production_delay.delay_days
+    alias: [延期天数, 交付延期, 交期延误, 交付慢]
+
+  - name: 库存周转天数
+    description: 平均库存除以日均销量，反映库存消化速度。
+    relevant_columns:
+      - inventory.quantity
+      - sales_order.quantity
+      - sales_order.order_date
+    alias: [库存周转, 周转天数, 周转慢, 滞销]
